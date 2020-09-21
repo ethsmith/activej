@@ -191,15 +191,16 @@ public final class RpcServer extends AbstractServer<RpcServer> {
 	// endregion
 
 	@Override
-	protected void serve(AsyncTcpSocket socket, InetAddress remoteAddress) {
+	protected void serve(AsyncTcpSocket socket) {
 		RpcStream stream = new RpcStream(socket, serializer, initialBufferSize, maxMessageSize,
 				autoFlushInterval, compression, true); // , statsSerializer, statsDeserializer, statsCompressor, statsDecompressor);
-		RpcServerConnection connection = new RpcServerConnection(this, remoteAddress, handlers, stream);
+		InetAddress address = socket.getRemoteAddress().getAddress();
+		RpcServerConnection connection = new RpcServerConnection(this, address, handlers, stream);
 		stream.setListener(connection);
 		add(connection);
 
 		// jmx
-		ensureConnectStats(remoteAddress).recordEvent();
+		ensureConnectStats(address).recordEvent();
 		totalConnects.recordEvent();
 	}
 
